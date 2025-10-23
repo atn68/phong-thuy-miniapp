@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm Tra Phong Thủy Số Điện Thoại</title>
+    <!-- Tải Tailwind CSS để tạo giao diện đẹp và responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        /* Custom styles for aesthetic */
+        .card {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+    <div class="w-full max-w-5xl">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">
+                Kiểm Tra Phong Thủy Số Điện Thoại
+            </h1>
+            <p class="text-lg text-gray-500">
+                Phân tích Ngũ Hành số điện thoại và so sánh với Bản Mệnh của bạn.
+            </p>
+        </header>
+
+        <!-- Thẻ nhập liệu chính -->
+        <div class="card bg-white p-6 md:p-10 rounded-xl">
+            <div class="space-y-6">
+                <!-- Khu vực nhập Số Điện Thoại -->
+                <div>
+                    <label for="phoneNumber" class="block text-xl font-semibold text-gray-700 mb-2">
+                        1. Nhập Số Điện Thoại (chỉ nhập số)
+                    </label>
+                    <input
+                        type="tel"
+                        id="phoneNumber"
+                        placeholder="VD: 0912345678"
+                        maxlength="12"
+                        class="w-full p-4 border-2 border-gray-300 rounded-lg text-2xl focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                    >
+                </div>
+
+                <!-- Khu vực nhập Ngày Sinh (Đã thêm Ngày/Tháng) -->
+                <div>
+                    <label class="block text-xl font-semibold text-gray-700 mb-2">
+                        2. Nhập Ngày/Tháng/Năm Sinh Dương Lịch (để xác định Bản Mệnh)
+                    </label>
+                    <div class="grid grid-cols-3 gap-4">
+                         <input
+                            type="number"
+                            id="birthDay"
+                            placeholder="Ngày"
+                            min="1"
+                            max="31"
+                            class="p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                        >
+                        <input
+                            type="number"
+                            id="birthMonth"
+                            placeholder="Tháng"
+                            min="1"
+                            max="12"
+                            class="p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                        >
+                        <input
+                            type="number"
+                            id="birthYear"
+                            placeholder="Năm (VD: 1990)"
+                            min="1900"
+                            max="2100"
+                            class="p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                        >
+                    </div>
+                </div>
+
+                <button
+                    onclick="checkFengShui()"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-300"
+                >
+                    Kiểm Tra Phong Thủy Tổng Thể ✨
+                </button>
+            </div>
+
+            <!-- Khu vực thông báo lỗi -->
+            <div id="messageBox" class="mt-4 hidden p-3 rounded-lg bg-red-100 text-red-700 font-medium"></div>
+
+        </div>
+
+        <!-- Khu vực hiển thị kết quả -->
+        <div id="resultsContainer" class="mt-8 space-y-8 hidden">
+
+            <!-- Đánh Giá Mức Độ Phù Hợp (Thang điểm 10) -->
+            <div class="card bg-white p-6 md:p-8 rounded-xl">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">
+                    1. Đánh Giá Mức Độ Phù Hợp (Thang 10)
+                </h2>
+                <div class="p-6 rounded-lg bg-indigo-50 border border-indigo-300">
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-xl font-bold text-indigo-800">
+                            ĐIỂM TƯƠNG HỢP:
+                        </p>
+                        <p id="compatibilityScoreText" class="text-5xl font-extrabold text-indigo-700"></p>
+                    </div>
+                    
+                    <p id="compatibilityDescription" class="text-gray-700 mb-2"></p>
+                    <p id="compatibilityRelationship" class="text-sm font-semibold text-gray-500"></p>
+                </div>
+            </div>
+
+            <!-- Phân tích Ngũ Hành (Thêm Biểu đồ) -->
+            <div class="card bg-white p-6 md:p-8 rounded-xl">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">
+                    2. Phân Tích Ngũ Hành Số Điện Thoại
+                </h2>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Biểu đồ Mạng Nhện Ngũ Hành (Canvas) -->
+                    <div class="flex flex-col items-center justify-center border p-4 rounded-lg bg-gray-50">
+                        <h3 class="font-bold text-lg mb-2 text-gray-700">Biểu đồ Mức Độ Chiếm Ưu Thế</h3>
+                        <canvas id="radarChart" width="300" height="300" class="w-full max-w-xs"></canvas>
+                        <p class="text-xs text-gray-500 mt-2">Đường màu đỏ thể hiện tần suất xuất hiện của mỗi hành.</p>
+                    </div>
+
+                    <!-- Kết quả đếm và Mệnh Chủ -->
+                    <div class="space-y-6">
+                         <!-- Bản Mệnh và Mệnh Chủ -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-3 border rounded-lg bg-red-50 border-red-300">
+                                <p class="text-sm font-medium text-red-600">Bản Mệnh (Năm Sinh):</p>
+                                <p id="userElement" class="text-2xl font-extrabold text-red-800 mt-1"></p>
+                            </div>
+                            <div class="p-3 border rounded-lg bg-indigo-50 border-indigo-300">
+                                <p class="text-sm font-medium text-indigo-600">Mệnh Chủ (Ưu Thế Số):</p>
+                                <p id="dominantElement" class="text-2xl font-extrabold text-indigo-800 mt-1"></p>
+                            </div>
+                        </div>
+
+                        <!-- Đếm chi tiết -->
+                        <div id="elementCounts" class="grid grid-cols-3 gap-4">
+                            <!-- Kết quả đếm chi tiết -->
+                        </div>
+
+                        <!-- Số Hợp Mệnh -->
+                        <div class="p-3 border rounded-lg bg-green-50 border-green-300">
+                            <p class="text-sm font-medium text-green-600">Các Con Số Hợp Mệnh (Theo Mệnh Chủ):</p>
+                            <p id="compatibleDigits" class="text-xl font-extrabold text-green-800 mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Phần Mới: Đánh giá Chi tiết bổ sung -->
+            <div class="card bg-white p-6 md:p-8 rounded-xl">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">
+                    3. Đánh Giá Chi Tiết Bổ Sung
+                </h2>
+                
+                <!-- Đánh giá Số Cuối Hợp Mệnh -->
+                <div class="p-5 rounded-lg border border-purple-300 bg-purple-50 mb-6">
+                    <h3 class="text-xl font-bold text-purple-700 mb-2">Đánh Giá Số Cuối Hợp Mệnh</h3>
+                    <p id="lastDigitResult" class="text-lg font-semibold"></p>
+                    <p id="lastDigitStatus" class="mt-1 text-sm text-gray-600"></p>
+                </div>
+
+                <!-- Phân tích Nút SIM -->
+                <div class="p-5 rounded-lg border border-yellow-300 bg-yellow-50">
+                    <h3 class="text-xl font-bold text-yellow-700 mb-2">Phân Tích Nút SIM</h3>
+                    <p id="nutSimSummary" class="text-lg font-semibold text-gray-800"></p>
+                    <p id="nutSimMeaning" class="mt-2 text-gray-700"></p>
+                </div>
+            </div>
+            <!-- Kết thúc Phần Mới -->
+
+            <!-- Giải thích cơ sở -->
+            <div class="card bg-white p-6 md:p-8 rounded-xl text-gray-600 text-sm">
+                <h3 class="font-bold mb-2">Cơ sở tính toán:</h3>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>**Ngũ Hành Số:** Thủy (1, 0), Thổ (2, 5, 8), Mộc (3, 4), Kim (6, 7), Hỏa (9).</li>
+                    <li>**Mệnh Chủ Số:** Hành có số lượng chữ số xuất hiện nhiều nhất trong dãy số.</li>
+                    <li>**Bản Mệnh:** Tính theo năm sinh Dương Lịch (Nạp Âm Ngũ Hành).</li>
+                    <li>**Đánh Giá Tương Hợp:** Ưu tiên mối quan hệ **Mệnh Chủ SIM $\rightarrow$ Bản Mệnh Chủ** theo quy luật Tương Sinh - Tương Khắc.</li>
+                    <li>**Số Cuối Hợp Mệnh:** So sánh số cuối với danh sách số hợp mệnh của Bản Mệnh.</li>
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Bản đồ Ngũ Hành của các con số (Bước 1)
+        const fengShuiMap = {
+            '1': 'Thủy', '0': 'Thủy',
+            '2': 'Thổ', '5': 'Thổ', '8': 'Thổ',
+            '3': 'Mộc', '4': 'Mộc',
+            '6': 'Kim', '7': 'Kim',
+            '9': 'Hỏa'
+        };
+        
+        // Dữ liệu cho Quy luật 1: Số cuối hợp Bản Mệnh
+        const lastDigitMap = {
+            'Kim': '0, 2, 5, 6, 7, 8',
+            'Mộc': '1, 3, 4',
+            'Thủy': '1, 6, 7',
+            'Hỏa': '3, 4, 9',
+            'Thổ': '0, 2, 5, 8, 9'
+        };
+
+        // Dữ liệu cho Quy luật 2: Ý nghĩa Nút SIM
+        const nutSimMeaning = {
+            0: 'Trong Phật pháp, số 0 là con số tối thượng nhất, đạt đến cảnh giới cao nhất của kiếp người, khi con người ta không còn trong tâm tưởng và suy nghĩ tham – sân – si, không còn bon chen, ganh đua. (Rất tốt)',
+            1: 'Tượng trưng cho sự khởi đầu, sinh sôi nảy nở. (Tốt)',
+            2: 'Tượng trưng cho sự cân bằng, mãi mãi. (Tốt)',
+            3: 'Biểu thị sự vững chãi, hài hòa, tài lộc kết hợp. (Tốt)',
+            4: 'Tượng trưng cho 4 mùa, 4 loài cây quý hiếm và sức mạnh vô biên 4 trụ đỡ trời. (Tốt)',
+            5: 'Mang nghĩa trường thọ và bất diện, ổn định. (Tốt)',
+            6: 'Đây là con số mang ý nghĩa của tài lộc, điềm lành, thuận lợi. (Rất tốt)',
+            7: 'Tượng trưng cho sức mạnh đẩy lùi ma quỷ, sự tròn vẹn của vũ trụ. (Tốt)',
+            8: 'Theo tiếng Trung Quốc, số 8 đọc là "bát", nếu đọc chệch sẽ thành "phát". Được người kinh doanh yêu thích. (Rất tốt)',
+            9: 'Con số mang nghĩa thiên trường địa cửu, thể hiện cho sự lâu bền và vững chắc. (Rất tốt)'
+        };
+
+        // Bản đồ Ngũ Hành Tương Sinh (Bước 3 - Cũ)
+        const compatibleDigitsMap = {
+            'Thủy': '1, 6, 7',
+            'Mộc': '1, 3, 4',
+            'Hỏa': '3, 4, 9',
+            'Thổ': '2, 5, 8, 9',
+            'Kim': '2, 5, 6, 7, 8'
+        };
+
+        // Màu sắc và Tên tắt cho Chart
+        const elementDetails = {
+            'Thủy': { color: '#3b82f6', short: 'THỦY' }, // Blue-500
+            'Mộc': { color: '#10b981', short: 'MỘC' },   // Green-500
+            'Hỏa': { color: '#ef4444', short: 'HỎA' },   // Red-500
+            'Thổ': { color: '#f59e0b', short: 'THỔ' },   // Amber-500
+            'Kim': { color: '#9ca3af', short: 'KIM' }    // Gray-500
+        };
+        const elementOrder = ['Thủy', 'Mộc', 'Hỏa', 'Thổ', 'Kim'];
+
+        // DOM Elements
+        const messageBox = document.getElementById('messageBox');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const elementCountsDiv = document.getElementById('elementCounts');
+        const dominantElementP = document.getElementById('dominantElement');
+        const compatibleDigitsP = document.getElementById('compatibleDigits');
+        const userElementP = document.getElementById('userElement');
+        const compatibilityScoreText = document.getElementById('compatibilityScoreText');
+        const compatibilityDescriptionP = document.getElementById('compatibilityDescription');
+        const compatibilityRelationshipP = document.getElementById('compatibilityRelationship');
+        // NEW DOM Elements
+        const lastDigitResultP = document.getElementById('lastDigitResult');
+        const lastDigitStatusP = document.getElementById('lastDigitStatus');
+        const nutSimSummaryP = document.getElementById('nutSimSummary');
+        const nutSimMeaningP = document.getElementById('nutSimMeaning');
+
+
+        // Hàm hiển thị thông báo
+        function showMessage(text, isError = true) {
+            messageBox.textContent = text;
+            messageBox.classList.remove('hidden');
+            if (isError) {
+                messageBox.classList.remove('bg-green-100', 'text-green-700');
+                messageBox.classList.add('bg-red-100', 'text-red-700');
+            } else {
+                messageBox.classList.remove('bg-red-100', 'text-red-700');
+                messageBox.classList.add('bg-green-100', 'text-green-700');
+            }
+        }
+
+        // Hàm ẩn thông báo và kết quả
+        function hideAll() {
+            messageBox.classList.add('hidden');
+            resultsContainer.classList.add('hidden');
+        }
+        
+        // --- LOGIC XÁC ĐỊNH BẢN MỆNH (NẠP ÂM NGŨ HÀNH) THEO NĂM SINH ---
+        // Dữ liệu Nạp Âm Ngũ Hành theo chu kỳ 60 năm
+        const napAmElements = [
+            'Kim', 'Kim', 'Hỏa', 'Hỏa', 'Mộc', 'Mộc', 'Thổ', 'Thổ', 'Kim', 'Kim', // 1984-1993
+            'Thủy', 'Thủy', 'Hỏa', 'Hỏa', 'Kim', 'Kim', 'Thổ', 'Thổ', 'Mộc', 'Mộc', // 1994-2003
+            'Thủy', 'Thủy', 'Kim', 'Kim', 'Hỏa', 'Hỏa', 'Thủy', 'Thủy', 'Thổ', 'Thổ', // 2004-2013
+            'Kim', 'Kim', 'Thủy', 'Thủy', 'Mộc', 'Mộc', 'Hỏa', 'Hỏa', 'Kim', 'Kim', // 2014-2023
+            'Thổ', 'Thổ', 'Mộc', 'Mộc', 'Kim', 'Kim', 'Thủy', 'Thủy', 'Hỏa', 'Hỏa', // 2024-2033
+            'Thổ', 'Thổ', 'Thủy', 'Thủy', 'Mộc', 'Mộc', 'Thổ', 'Thổ', 'Kim', 'Kim'  // 2034-2043
+        ];
+        
+        function getNapAmElement(year) {
+            const currentYear = new Date().getFullYear();
+            if (year < 1944 || year > (currentYear + 20)) return 'Không rõ';
+
+            // Chu kỳ Nạp Âm lặp lại sau 60 năm. Sử dụng 1984 (Giáp Tý) làm điểm mốc 0.
+            const cycleIndex = (year - 1984) % 60;
+            const adjustedIndex = (cycleIndex + 60) % 60; // Đảm bảo chỉ số luôn dương (0-59)
+
+            return napAmElements[adjustedIndex] || 'Không rõ';
+        }
+
+        // --- LOGIC ĐÁNH GIÁ TƯƠNG SINH - TƯƠNG KHẮC (TRẢ VỀ ĐIỂM 10) ---
+        // Đánh giá ưu tiên theo hướng SIM -> Chủ
+        function getCompatibility(userElement, phoneElement) {
+            // Quy luật Ngũ Hành Tương Sinh/Tương Khắc
+            const sinhMap = { 'Thủy': 'Mộc', 'Mộc': 'Hỏa', 'Hỏa': 'Thổ', 'Thổ': 'Kim', 'Kim': 'Thủy' };
+            const khacMap = { 'Thủy': 'Hỏa', 'Mộc': 'Thổ', 'Hỏa': 'Kim', 'Thổ': 'Thủy', 'Kim': 'Mộc' };
+
+            let score = 0;
+            let relationship = 'Không rõ';
+            let description = 'Không thể xác định mối quan hệ Ngũ Hành.';
+            let relationshipDetail = '';
+
+            // 1. Mệnh Chủ SINH Bản Mệnh (SIM Sinh Người) - Ưu tiên 1
+            if (sinhMap[phoneElement] === userElement) {
+                score = 10;
+                relationship = 'TƯƠNG SINH (SIM Hỗ Trợ Chủ)';
+                relationshipDetail = `${phoneElement} (Mệnh Chủ SIM) SINH ${userElement} (Bản Mệnh)`;
+                description = `Mệnh Chủ SIM mang lại năng lượng hỗ trợ dồi dào cho bạn. Mọi việc dễ thành, ít gặp cản trở. **Đại Cát.**`;
+            }
+            // 2. Hòa Hợp (Mệnh Chủ = Bản Mệnh) - Ưu tiên 2
+            else if (userElement === phoneElement) {
+                score = 8;
+                relationship = 'HÒA HỢP (Bình Hòa)';
+                relationshipDetail = `${userElement} (Bản Mệnh) và ${phoneElement} (Mệnh Chủ SIM) đồng hành`;
+                description = `Hai hành đồng điệu, tạo sự ổn định, cân bằng và hỗ trợ nhẹ nhàng cho nhau. **Rất tốt.**`;
+            }
+            // 3. Bản Mệnh SINH Mệnh Chủ (Người Sinh SIM) - Ưu tiên 3
+            else if (sinhMap[userElement] === phoneElement) {
+                score = 6;
+                relationship = 'TƯƠNG SINH (SIM Bị Chủ Hút Năng Lượng)';
+                relationshipDetail = `${userElement} (Bản Mệnh) SINH ${phoneElement} (Mệnh Chủ SIM)`;
+                description = `Số điện thoại là nơi bạn cần đầu tư năng lượng, công sức (Bị hút năng lượng). Mối quan hệ tốt nhưng hao tốn. **Thứ Cát.**`;
+            }
+            // 4. Bản Mệnh KHẮC Mệnh Chủ (Người Khắc SIM) - Ưu tiên 4
+            else if (khacMap[userElement] === phoneElement) {
+                score = 4;
+                relationship = 'KHẮC CHẾ (SIM Bị Chủ Chế Ngự)';
+                relationshipDetail = `${userElement} (Bản Mệnh) KHẮC ${phoneElement} (Mệnh Chủ SIM)`;
+                description = `Bạn có thể kiểm soát được SIM, nhưng dễ xảy ra xung đột năng lượng hoặc cản trở nhỏ. Số ít hỗ trợ, cần cẩn trọng. **Chấp nhận được.**`;
+            }
+            // 5. Mệnh Chủ KHẮC Bản Mệnh (SIM Khắc Người) - Ưu tiên 5 (Xấu nhất)
+            else if (khacMap[phoneElement] === userElement) {
+                score = 2;
+                relationship = 'TƯƠNG KHẮC (SIM Chống Lại Chủ)';
+                relationshipDetail = `${phoneElement} (Mệnh Chủ SIM) KHẮC ${userElement} (Bản Mệnh)`;
+                description = `Mệnh Chủ SIM xung khắc trực tiếp với bạn. Số điện thoại có thể gây cản trở, áp lực, hao tổn. **Đại Hung/Cần tránh.**`;
+            }
+
+            return { score, relationship, description, relationshipDetail };
+        }
+
+        // --- NEW LOGIC: PHÂN TÍCH SỐ CUỐI HỢP MỆNH ---
+        function analyzeLastDigit(userElement, phoneNumber) {
+            const lastDigit = phoneNumber.slice(-1);
+            const compatibleDigits = lastDigitMap[userElement];
+            
+            if (compatibleDigits && compatibleDigits.includes(lastDigit)) {
+                return {
+                    isMatch: true,
+                    status: `Số cuối ${lastDigit} thuộc nhóm hợp mệnh của bạn. **Đã Hợp Mệnh**.`,
+                    color: 'text-green-700'
+                };
+            } else {
+                return {
+                    isMatch: false,
+                    status: `Số cuối ${lastDigit} KHÔNG thuộc nhóm hợp mệnh của bạn. **Cần xem xét**.`,
+                    color: 'text-red-700'
+                };
+            }
+        }
+
+        // --- NEW LOGIC: PHÂN TÍCH NÚT SIM ---
+        function analyzeNutSim(phoneNumber) {
+            let sum = 0;
+            for (const digit of phoneNumber) {
+                sum += parseInt(digit);
+            }
+            
+            // Nút SIM là số cuối cùng của tổng
+            const nutSim = sum % 10;
+            const meaning = nutSimMeaning[nutSim];
+            
+            return {
+                sum: sum,
+                nut: nutSim,
+                meaning: meaning
+            };
+        }
+
+        // --- HÀM VẼ BIỂU ĐỒ MẠNG NHỆN (RADAR CHART) ---
+        function drawRadarChart(counts, maxCount) {
+            const canvas = document.getElementById('radarChart');
+            if (!canvas.getContext) return;
+            const ctx = canvas.getContext('2d');
+            const size = canvas.width;
+            const center = size / 2;
+            const maxRadius = center * 0.75; // Bán kính tối đa của biểu đồ
+
+            ctx.clearRect(0, 0, size, size);
+
+            // Tỷ lệ chuyển đổi điểm thành bán kính
+            const scale = (value) => (value / maxCount) * maxRadius;
+
+            // Góc cho 5 hành (bắt đầu từ đỉnh, cách nhau 72 độ)
+            const angles = {
+                'Thủy': Math.PI * 0.5,      // 90 độ (Đỉnh - Thủy)
+                'Mộc': Math.PI * 0.5 + (Math.PI * 2 / 5),
+                'Hỏa': Math.PI * 0.5 + (Math.PI * 4 / 5),
+                'Thổ': Math.PI * 0.5 + (Math.PI * 6 / 5),
+                'Kim': Math.PI * 0.5 + (Math.PI * 8 / 5)
+            };
+
+            // 1. Vẽ lưới và trục (5 cánh)
+            ctx.strokeStyle = '#e5e7eb'; // Màu xám nhạt
+            ctx.lineWidth = 1;
+            ctx.font = '12px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Vòng tròn lưới
+            for (let i = 1; i <= 3; i++) {
+                ctx.beginPath();
+                ctx.arc(center, center, maxRadius / 3 * i, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+
+            // Trục
+            elementOrder.forEach(element => {
+                const angle = angles[element];
+                const x = center + maxRadius * Math.cos(angle);
+                const y = center - maxRadius * Math.sin(angle); // Trục Y đảo ngược
+
+                ctx.beginPath();
+                ctx.moveTo(center, center);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                // Chữ (Tên hành)
+                const textX = center + (maxRadius + 15) * Math.cos(angle);
+                const textY = center - (maxRadius + 15) * Math.sin(angle);
+                
+                ctx.fillStyle = elementDetails[element].color;
+                ctx.fillText(elementDetails[element].short, textX, textY);
+            });
+
+            // 2. Vẽ dữ liệu (Polygon)
+            ctx.beginPath();
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.4)'; // Đỏ trong suốt
+            ctx.strokeStyle = '#ef4444'; // Đỏ đậm
+            ctx.lineWidth = 2;
+
+            elementOrder.forEach((element, index) => {
+                const angle = angles[element];
+                const radius = scale(counts[element]);
+                const x = center + radius * Math.cos(angle);
+                const y = center - radius * Math.sin(angle);
+
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+
+                // Vẽ điểm
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        }
+
+
+        // Hàm chính kiểm tra phong thủy
+        function checkFengShui() {
+            hideAll();
+            const inputPhone = document.getElementById('phoneNumber').value;
+            const inputDay = document.getElementById('birthDay').value;
+            const inputMonth = document.getElementById('birthMonth').value;
+            const inputYear = document.getElementById('birthYear').value;
+            
+            // Loại bỏ khoảng trắng và ký tự không phải số
+            const phoneNumber = inputPhone.replace(/[^0-9]/g, '');
+            const birthDay = parseInt(inputDay);
+            const birthMonth = parseInt(inputMonth);
+            const birthYear = parseInt(inputYear);
+
+            // 1. Validate đầu vào
+            if (phoneNumber.length < 9) {
+                showMessage('Vui lòng nhập số điện thoại hợp lệ (tối thiểu 9 chữ số).');
+                return;
+            }
+            if (isNaN(birthYear) || birthYear < 1944 || birthYear > new Date().getFullYear() + 20) {
+                 showMessage('Vui lòng nhập Năm Sinh Dương Lịch hợp lệ (Ví dụ: 1990).');
+                return;
+            }
+            // Validation cho Ngày/Tháng là tùy chọn nhưng nên kiểm tra tính hợp lệ cơ bản
+            if (isNaN(birthDay) || birthDay < 1 || birthDay > 31 || isNaN(birthMonth) || birthMonth < 1 || birthMonth > 12) {
+                 showMessage('Vui lòng nhập đầy đủ và chính xác Ngày và Tháng sinh.', true);
+                 return;
+            }
+
+            // --- A. XÁC ĐỊNH BẢN MỆNH NGƯỜI DÙNG ---
+            const userElement = getNapAmElement(birthYear);
+            if (userElement === 'Không rõ') {
+                showMessage('Không thể xác định Bản Mệnh từ năm sinh này. Vui lòng kiểm tra lại Năm Sinh.', true);
+                return;
+            }
+
+            // --- B. XÁC ĐỊNH MỆNH CHỦ CỦA SỐ ĐIỆN THOẠI ---
+            const counts = { 'Thủy': 0, 'Mộc': 0, 'Hỏa': 0, 'Thổ': 0, 'Kim': 0 };
+
+            for (const digit of phoneNumber) {
+                const element = fengShuiMap[digit];
+                if (element) {
+                    counts[element]++;
+                }
+            }
+            
+            let maxCount = 0;
+            let dominantElements = [];
+
+            for (const [element, count] of Object.entries(counts)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    dominantElements = [element];
+                } else if (count === maxCount && maxCount > 0) {
+                    dominantElements.push(element);
+                }
+            }
+
+            const dominantElement = dominantElements[0];
+            const dominantElementText = dominantElements.join(' và ');
+
+            // Cảnh báo nếu có đồng hạng
+            if (dominantElements.length > 1) {
+                showMessage(`Lưu ý: Có hai hoặc nhiều hành đồng hạng (${dominantElementText}), Mệnh Chủ được chọn là ${dominantElement} để đánh giá Tương Khắc.`, false);
+            }
+
+            // --- C. ĐÁNH GIÁ PHÙ HỢP (Thang điểm 10) ---
+            let compatibilityResult = { score: 0, relationship: 'Không rõ', description: 'Không thể đánh giá.', relationshipDetail: '' };
+            if (dominantElement) {
+                compatibilityResult = getCompatibility(userElement, dominantElement);
+            }
+            
+            // --- D. TÌM SỐ HỢP MỆNH (dựa trên mệnh chủ của số) ---
+            let compatibleDigitsText = '';
+            const combinedDigits = new Set();
+            dominantElements.forEach(element => {
+                compatibleDigitsMap[element].split(', ').forEach(digit => {
+                    combinedDigits.add(digit);
+                });
+            });
+            compatibleDigitsText = Array.from(combinedDigits).sort().join(', ');
+
+            // --- E. ĐÁNH GIÁ CHI TIẾT BỔ SUNG ---
+            const lastDigitAnalysis = analyzeLastDigit(userElement, phoneNumber);
+            lastDigitResultP.textContent = lastDigitAnalysis.status.replace(/\*\*/g, '');
+            lastDigitResultP.classList.value = lastDigitAnalysis.color;
+            lastDigitStatusP.textContent = `Các số hợp mệnh ${userElement}: ${lastDigitMap[userElement]}.`;
+
+            const nutSimAnalysis = analyzeNutSim(phoneNumber);
+            nutSimSummaryP.textContent = `Tổng các số: ${nutSimAnalysis.sum}. Nút SIM là: ${nutSimAnalysis.nut} nút.`;
+            nutSimMeaningP.innerHTML = `**Ý nghĩa:** ${nutSimAnalysis.meaning}`;
+            
+            // --- F. HIỂN THỊ KẾT QUẢ ---
+            
+            // 1. Đánh Giá Định Lượng
+            compatibilityScoreText.textContent = compatibilityResult.score + '/10';
+            compatibilityDescriptionP.textContent = compatibilityResult.description;
+            compatibilityRelationshipP.textContent = `Mối quan hệ: ${compatibilityResult.relationshipDetail}.`;
+            
+            // Cập nhật màu sắc dựa trên điểm số
+            let scoreColorClass = 'text-gray-700';
+            if (compatibilityResult.score >= 9) scoreColorClass = 'text-green-700';
+            else if (compatibilityResult.score >= 6) scoreColorClass = 'text-lime-600';
+            else if (compatibilityResult.score <= 3) scoreColorClass = 'text-red-700';
+            compatibilityScoreText.classList.value = `text-5xl font-extrabold ${scoreColorClass}`;
+
+
+            // 2. Bản Mệnh và Mệnh Chủ
+            userElementP.textContent = userElement;
+            dominantElementP.textContent = dominantElementText || 'Không xác định';
+            
+            // 3. Phân Tích Ngũ Hành chi tiết
+            elementCountsDiv.innerHTML = '';
+            // Max possible count is the length of the phone number, used for chart scaling
+            const chartMaxCount = phoneNumber.length > 0 ? phoneNumber.length : 1; 
+            
+            elementOrder.forEach(element => {
+                const count = counts[element];
+                const detail = elementDetails[element];
+                const elementHtml = `
+                    <div class="flex flex-col items-center p-3 rounded-lg border bg-white shadow-sm">
+                        <span class="text-xs font-semibold text-gray-500">${detail.short}</span>
+                        <span class="text-3xl font-extrabold" style="color:${detail.color}">${count}</span>
+                        <span class="text-xs text-gray-500">con số</span>
+                    </div>
+                `;
+                elementCountsDiv.insertAdjacentHTML('beforeend', elementHtml);
+            });
+            
+            compatibleDigitsP.textContent = compatibleDigitsText;
+            
+            // 4. Vẽ biểu đồ
+            drawRadarChart(counts, chartMaxCount);
+
+            // Hiện khu vực kết quả
+            resultsContainer.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
